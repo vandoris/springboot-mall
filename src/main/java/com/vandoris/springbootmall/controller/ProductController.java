@@ -1,12 +1,11 @@
 package com.vandoris.springbootmall.controller;
 
-import com.fasterxml.jackson.databind.annotation.JsonValueInstantiator;
 import com.vandoris.springbootmall.constant.ProductCategory;
 import com.vandoris.springbootmall.dto.ProductQueryParams;
 import com.vandoris.springbootmall.dto.ProductRequest;
 import com.vandoris.springbootmall.model.Product;
 import com.vandoris.springbootmall.service.ProductService;
-import jdk.jfr.Category;
+import com.vandoris.springbootmall.util.Page;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,7 +15,6 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
-import java.util.Calendar;
 import java.util.List;
 
 @Validated
@@ -27,7 +25,7 @@ public class ProductController {
     private ProductService productService;
 
     @GetMapping("/products")
-    public ResponseEntity<List<Product>> getProducts(
+    public ResponseEntity<Page<Product>> getProducts(
             // 查詢條件 filtering
             @RequestParam(required = false) ProductCategory category,
             @RequestParam(required = false ) String search,
@@ -48,9 +46,20 @@ public class ProductController {
         productQueryParams.setLimit(limit);
         productQueryParams.setOffset(offset);
 
+        // 取得 product list
         List<Product> productList = productService.getProducts(productQueryParams);
 
-        return ResponseEntity.status(HttpStatus.OK).body(productList);
+        // 取得 product 總數
+        Integer total = productService.countProduct(productQueryParams);
+
+        // 分頁
+        Page<Product> page = new Page<>();
+        page.setLimit(limit);
+        page.setOffset(offset);
+        page.setTotal(total);
+        page.setResutls(productList);
+
+        return ResponseEntity.status(HttpStatus.OK).body(page);
     }
 
     @GetMapping("/products/{productId}")

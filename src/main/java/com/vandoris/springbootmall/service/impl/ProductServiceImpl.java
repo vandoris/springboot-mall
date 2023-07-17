@@ -1,6 +1,5 @@
 package com.vandoris.springbootmall.service.impl;
 
-import com.vandoris.springbootmall.constant.ProductCategory;
 import com.vandoris.springbootmall.dao.ProductDao;
 import com.vandoris.springbootmall.dto.ProductQueryParams;
 import com.vandoris.springbootmall.dto.ProductRequest;
@@ -16,6 +15,11 @@ public class ProductServiceImpl implements ProductService {
 
     @Autowired
     private ProductDao productDao;
+
+    @Override
+    public Integer countProduct(ProductQueryParams productQueryParams) {
+        return productDao.countProduct(productQueryParams);
+    }
 
     @Override
     public List<Product> getProducts(ProductQueryParams productQueryParams) {
