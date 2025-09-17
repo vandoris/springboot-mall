@@ -1,11 +1,13 @@
 package com.vandoris.springbootmall.model;
 
+import com.vandoris.springbootmall.constant.ProductCategory;
+
 import java.util.Date;
 
 public class Product {
     private Integer prodouctId;
     private String prodouctName;
-    private String category;
+    private ProductCategory category;
     private String imageUrl;
     private Integer price;
     private Integer stock;
@@ -29,11 +31,11 @@ public class Product {
         this.prodouctName = prodouctName;
     }
 
-    public String getCategory() {
+    public ProductCategory getCategory() {
         return category;
     }
 
-    public void setCategory(String category) {
+    public void setCategory(ProductCategory category) {
         this.category = category;
     }
 
