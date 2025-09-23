@@ -1,5 +1,6 @@
 package com.vandoris.springbootmall.controller;
 
+import com.vandoris.springbootmall.constant.ProductCategory;
 import com.vandoris.springbootmall.dto.ProductRequest;
 import com.vandoris.springbootmall.model.Product;
 import com.vandoris.springbootmall.service.ProductService;
@@ -18,8 +19,10 @@ public class ProductController {
     private ProductService productService;
 
     @GetMapping("/products")
-    public ResponseEntity<List<Product>> getProducts() {
-        List<Product> productList = productService.getProducts();
+    public ResponseEntity<List<Product>> getProducts(
+            @RequestParm ProductCategory category
+    ) {
+        List<Product> productList = productService.getProducts(category);
 
         return ResponseEntity.status(HttpStatus.OK).body(productList);
     }

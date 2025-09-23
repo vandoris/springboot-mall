@@ -1,5 +1,6 @@
 package com.vandoris.springbootmall.service.impl;
 
+import com.vandoris.springbootmall.constant.ProductCategory;
 import com.vandoris.springbootmall.dao.ProductDao;
 import com.vandoris.springbootmall.dto.ProductRequest;
 import com.vandoris.springbootmall.model.Product;
@@ -16,8 +17,8 @@ public class ProductServiceImpl implements ProductService {
     private ProductDao productDao;
 
     @Override
-    public List<Product> getProducts() {
-        return productDao.getProducts();
+    public List<Product> getProducts(ProductCategory category) {
+        return productDao.getProducts(category);
     }
 
     @Override
