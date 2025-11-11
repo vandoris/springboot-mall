@@ -2,15 +2,21 @@ package com.vandoris.springbootmall.service.impl;
 
 import com.vandoris.springbootmall.dao.OrderDao;
 import com.vandoris.springbootmall.dao.ProductDao;
+import com.vandoris.springbootmall.dao.UserDao;
 import com.vandoris.springbootmall.dto.BuyItem;
 import com.vandoris.springbootmall.dto.CreateOrderRequest;
 import com.vandoris.springbootmall.model.Order;
 import com.vandoris.springbootmall.model.OrderItem;
 import com.vandoris.springbootmall.model.Product;
+import com.vandoris.springbootmall.model.User;
 import com.vandoris.springbootmall.service.OrderService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.beans.Transient;
 import java.util.ArrayList;
@@ -19,11 +25,16 @@ import java.util.List;
 @Component
 public class OrderServiceImpl implements OrderService {
 
+    private final static Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
+
     @Autowired
     private OrderDao orderDao;
 
     @Autowired
     private ProductDao productDao;
+
+    @Autowired
+    private UserDao userDao;
 
     @Override
     public Order getOrderById(Integer orderId) {
@@ -39,11 +50,32 @@ public class OrderServiceImpl implements OrderService {
     @Transactional
     @Override
     public Integer createOrder(Integer userId, CreateOrderRequest createOrderRequest) {
+
+        // 檢查user是否真實存在
+        User user = userDao.getUserById(userId);
+        if (user == null) {
+            logger.warn("該 user id {} 不存在", userId);
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+        }
+
+
         int totalAmount = 0;
         List<OrderItem> orderItemList = new ArrayList<>();
 
         for (BuyItem buyItem : createOrderRequest.getBuyItemList()) {
             Product product = productDao.getProductById(buyItem.getProductId());
+
+            // 檢查商品是否存在、庫存是否足夠
+            if (product == null) {
+                logger.warn("該商品 {} 不存在", buyItem.getProductId());
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+            } else if (product.getStock() < buyItem.getQuantity()) {
+                logger.warn("該商品 {} 庫存量不足，無法購買，庫存量剩餘 {}", buyItem.getProductId(), product.getStock());
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+            }
+
+            // 扣除商品庫存
+            productDao.updateProduct(product.getProdouctId(), product.getStock() - buyItem.getQuantity());
 
             // 計算總金額
             int amount = buyItem.getQuantity() * product.getPrice();
